@@ -44,36 +44,31 @@ def main():
         conexao_bd = mysql.connector.connect(**CONFIG_BD)
         cursor_bd = conexao_bd.cursor()
 
+        # Coletar os valores dos gastos regulares
         valor_luz = obter_entrada_usuario("Digite o valor da conta de luz: ")
-        data_vencimento_luz = input("Digite a data de vencimento para a conta de luz (DD-MM-AAAA): ")
-        data_vencimento_luz_bd = formatar_data_para_bd(data_vencimento_luz)
-
-        valor_wifi = obter_entrada_usuario("Digite o valor da conta de WiFi: ")
-        data_vencimento_wifi = input("Digite a data de vencimento para a conta de WiFi (DD-MM-AAAA): ")
-        data_vencimento_wifi_bd = formatar_data_para_bd(data_vencimento_wifi)
-
         valor_passe = obter_entrada_usuario("Digite o valor do passe de transporte: ")
-        data_vencimento_passe = input("Digite a data de vencimento para o passe de transporte (DD-MM-AAAA): ")
-        data_vencimento_passe_bd = formatar_data_para_bd(data_vencimento_passe)
-
         valor_recarga_celular = obter_entrada_usuario("Digite o valor da recarga do celular: ")
-        data_vencimento_celular = input("Digite a data de vencimento para a recarga do celular (DD-MM-AAAA): ")
-        data_vencimento_celular_bd = formatar_data_para_bd(data_vencimento_celular)
+        
+        # Coletar a data de vencimento comum para gastos regulares
+        data_vencimento_comum = input("Digite a data de vencimento para os gastos regulares (DD-MM-AAAA): ")
+        data_vencimento_comum_bd = formatar_data_para_bd(data_vencimento_comum)
 
+        # Coletar os valores dos gastos extras
         gastos_extra = obter_gastos_extra()
 
         total_a_pagar = (
-            valor_luz + valor_wifi + valor_passe + valor_recarga_celular +
+            valor_luz + valor_passe + valor_recarga_celular +
             sum(gasto[1] for gasto in gastos_extra)
         )
 
         valor_recebido = obter_entrada_usuario("Digite o valor que você irá receber este mês: ")
 
-        inserir_gastos(cursor_bd, [("Conta de Luz", valor_luz)], data_vencimento_luz_bd)
-        inserir_gastos(cursor_bd, [("Conta de WiFi", valor_wifi)], data_vencimento_wifi_bd)
-        inserir_gastos(cursor_bd, [("Passe de Transporte", valor_passe)], data_vencimento_passe_bd)
-        inserir_gastos(cursor_bd, [("Recarga do Celular", valor_recarga_celular)], data_vencimento_celular_bd)
+        # Inserir gastos regulares com a mesma data de vencimento
+        gastos_regulares = [("Conta de Luz", valor_luz), ("Passe de Transporte", valor_passe),
+                            ("Recarga do Celular", valor_recarga_celular)]
+        inserir_gastos(cursor_bd, gastos_regulares, data_vencimento_comum_bd)
 
+        # Inserir gastos extras com datas de vencimento individuais
         for nome_gasto, valor_gasto in gastos_extra:
             data_vencimento = input(f"Digite a data de vencimento para o gasto '{nome_gasto}' (DD-MM-AAAA): ")
             data_vencimento_bd = formatar_data_para_bd(data_vencimento)
@@ -87,10 +82,8 @@ def main():
         saldo_restante = valor_recebido - total_a_pagar
 
         print("\nResumo dos Gastos:")      
-        print(f"Conta de Luz: R${valor_luz:.2f} - Vencimento: {data_vencimento_luz}")
-        print(f"Conta de Wifi: R${valor_wifi:.2f} - Vencimento: {data_vencimento_wifi}")
-        print(f"Passe de Transporte: R${valor_passe:.2f} - Vencimento: {data_vencimento_passe}")
-        print(f"Recarga do Celular: R${valor_recarga_celular:.2f} - Vencimento: {data_vencimento_celular}")
+        for nome_gasto, valor_gasto in gastos_regulares:
+            print(f"{nome_gasto}: R${valor_gasto:.2f} - Vencimento: {data_vencimento_comum}")
         for nome_gasto, valor_gasto in gastos_extra:
             print(f"{nome_gasto}: R${valor_gasto:.2f}")
         print("------------------------")
@@ -107,6 +100,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
