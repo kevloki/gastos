@@ -5,7 +5,7 @@ from tkinter import simpledialog, messagebox
 
 CONFIG_BD = {
     "host": "localhost",
-    "user": "admin",
+    "user": "root",
     "password": "admin",
     "database": "gastos"
 }

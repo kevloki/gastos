@@ -3,7 +3,7 @@ import mysql.connector
 # Configuração da conexão com o banco de dados
 db_connection = mysql.connector.connect(
     host="localhost",
-    user="admin",
+    user="root",
     password="admin",
     database="gastos"
 )
